@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches:
+    - main
+    - actions-test
+  pull_request:
+    branches:
+    - main
+    - actions-test
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Build
+      run: cargo build
+
+    - name: Test
+      run: cargo test
