@@ -5,7 +5,7 @@ use syn::{parse::Parse, punctuated::Punctuated, Attribute, Token};
 pub fn parse_actor_attributes(attrs: &[Attribute]) -> Vec<ActorAttr> {
     attrs
         .iter()
-        .filter(|attr| attr.path.is_ident("actor"))
+        .filter(|attr| attr.path.is_ident("spawn"))
         .flat_map(|attr| {
             attr.parse_args_with(Punctuated::<ActorAttr, Token![,]>::parse_terminated)
                 .unwrap_or_abort()
