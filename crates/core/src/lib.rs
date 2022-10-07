@@ -1,3 +1,8 @@
+pub mod eigr {
+    #[path = "eigr.spawn.rs"]
+    pub mod spawn {}
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

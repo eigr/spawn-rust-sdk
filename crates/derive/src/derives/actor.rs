@@ -3,7 +3,7 @@ use proc_macro_error::abort_call_site;
 // use quote::quote;
 use syn::DeriveInput;
 
-pub fn derive_actor(input: &DeriveInput) -> TokenStream {
+/*pub fn derive_actor(input: &DeriveInput) -> TokenStream {
     let _ident = &input.ident;
     match input.data {
         // Data::Struct(..) => {
@@ -14,3 +14,4 @@ pub fn derive_actor(input: &DeriveInput) -> TokenStream {
         _ => abort_call_site!("`#[derive(Actor)] not implemented yet"),
     }
 }
+*/
