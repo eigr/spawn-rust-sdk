@@ -32,11 +32,10 @@ impl Request {
 }
 
 #[allow(unused_variables)]
-pub trait Action<R>
+pub trait Action
 where
     Self: Actor,
-    R: Request,
 {
     /// This method is called for every message received by this actor.
-    fn handle(&mut self, req: R, ctx: &mut Context) -> Value;
+    fn handle(&mut self, req: Request, ctx: &mut Context) -> Value;
 }

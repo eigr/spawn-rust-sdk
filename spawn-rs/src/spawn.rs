@@ -1,8 +1,9 @@
+use actor::Actor;
 
 #[derive(Debug)]
 pub struct Spawn {
     system: String,
-    actors: Vec<Actor>,
+    actor: Vec<dyn Actor>,
     server_port: u16,
 }
 
@@ -31,15 +32,10 @@ impl Spawn {
         self
     }
 
-    pub fn add_actor(
-        &mut self,
-        actor: Actor,
-    ) -> &mut Spawn {
+    pub fn add_actor(&mut self, actor: dyn Actor) -> &mut Spawn {
         self.actor = actor;
         self
     }
 
-    pub async fn start(&mut self) -> &mut Permastate {
-        
-    }
+    pub fn start(&mut self) {}
 }

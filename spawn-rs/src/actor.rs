@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub enum Kind {
     ABSTRACT,
     SINGLETON,
@@ -22,7 +23,7 @@ impl Default for ActorSettings {
     fn default() -> ActorSettings {
         ActorSettings {
             name: String::from(""),
-            kind: Kind.SINGLETON,
+            kind: Kind::SINGLETON,
             actions: Vec::new(),
             stateful: true,
             deactivated_timeout: 60000,
@@ -88,5 +89,5 @@ impl ActorSettings {
 /// Actor trait
 #[allow(unused_variables)]
 pub trait Actor {
-    fn settings(&mut self) -> ActorSettings {}
+    fn settings(&mut self) -> ActorSettings;
 }

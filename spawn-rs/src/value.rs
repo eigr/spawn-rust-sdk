@@ -7,8 +7,8 @@ pub struct Value {
 }
 
 impl Default for Value {
-    fn default() -> Request {
-        Request {
+    fn default() -> Value {
+        Value {
             state: Any::default(),
             response: Any::default(),
         }

@@ -154,7 +154,7 @@
 //
 syntax = "proto3";
 
-package eigr.spawn;
+package eigr.functions.protocol;
 
 import "actor.proto";
 import "google/protobuf/any.proto";
