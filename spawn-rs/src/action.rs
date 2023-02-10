@@ -21,6 +21,14 @@ impl Request {
     pub fn new() -> Self {
         Default::default()
     }
+
+    pub fn action(&self) -> &str {
+        &self.action
+    }
+
+    pub fn body(&self) -> &Any {
+        &self.body
+    }
 }
 
 #[allow(unused_variables)]
