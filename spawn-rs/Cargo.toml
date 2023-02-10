@@ -1,0 +1,21 @@
+[package]
+authors = ["Adriano Santos <solid.sistemas@gmail.com>", "Weslei Pereira"]
+description = "Spawn Rust SDK"
+documentation = "https://github.com/eigr-labs/spawn-rust-sdk"
+homepage = "https://eigr.io/"
+keywords = [
+  "actors",
+  "actor service mesh",
+  "serverless",
+]
+license = "Apache-2.0"
+name = "spawn-rs"
+version = "0.1.0"
+
+[dependencies]
+actix-web = "4"
+prost = "0.10"
+prost-types = "0.10"
+
+[build-dependencies]
+tonic-build = "0.8"
