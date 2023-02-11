@@ -1,18 +1,17 @@
 use actor::Actor;
 
-#[derive(Debug)]
 pub struct Spawn {
     system: String,
-    actor: Vec<dyn Actor>,
+    actor: Vec<Box<dyn Actor>>,
     server_port: u16,
 }
 
 impl Default for Spawn {
     fn default() -> Spawn {
         Spawn {
-            system: String::from(""),
-            actor: Actor::default(),
+            actor: Vec::new(),
             server_port: 8091,
+            system: String::from(""),
         }
     }
 }
@@ -32,8 +31,8 @@ impl Spawn {
         self
     }
 
-    pub fn add_actor(&mut self, actor: dyn Actor) -> &mut Spawn {
-        self.actor = actor;
+    pub fn add_actor(&mut self, actor: Box<dyn Actor>) -> &mut Spawn {
+        self.actor.push(actor);
         self
     }
 

@@ -7,7 +7,7 @@ use spawn_rs::{
     value::Value,
 };
 
-struct Joe;
+pub struct Joe;
 
 impl Actor for Joe {
     fn settings(&mut self) -> ActorSettings {
