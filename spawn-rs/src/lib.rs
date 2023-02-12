@@ -1,3 +1,4 @@
+extern crate actix_web;
 extern crate prost_types;
 
 mod eigr {
@@ -11,5 +12,6 @@ mod eigr {
 pub mod action;
 pub mod actor;
 pub mod context;
+pub mod handler;
 pub mod spawn;
 pub mod value;

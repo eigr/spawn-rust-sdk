@@ -1,7 +1,7 @@
 use prost_types::Any;
 
 use spawn_rs::{
-    action::{Action, Request},
+    action::{Action, Message},
     actor::{Actor, ActorSettings, Kind},
     context::Context,
     value::Value,
@@ -23,13 +23,12 @@ impl Actor for Joe {
 }
 
 impl Action for Joe {
-    fn handle(&mut self, req: Request, ctx: &mut Context) -> Value {
-        match req.action() {
+    fn handle(&mut self, msg: Message, ctx: &mut Context) -> Value {
+        match msg.action() {
             "sum" => Value::new()
                 .state(ctx.state().clone())
                 .response(Any::default())
                 .to_owned(),
-
             _ => Value::new()
                 .state(Any::default())
                 .response(Any::default())

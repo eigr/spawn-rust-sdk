@@ -2,6 +2,7 @@
 authors = ["Adriano Santos <solid.sistemas@gmail.com>", "Weslei Pereira"]
 description = "Spawn Rust SDK"
 documentation = "https://github.com/eigr-labs/spawn-rust-sdk"
+edition = "2021"
 homepage = "https://eigr.io/"
 keywords = [
   "actors",
@@ -13,6 +14,7 @@ name = "spawn-rs"
 version = "0.1.0"
 
 [dependencies]
+actix-server = "2.2.0"
 actix-web = "4"
 prost = "0.11"
 prost-types = "0.11"

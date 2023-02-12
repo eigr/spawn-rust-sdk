@@ -3,21 +3,21 @@ use prost_types::Any;
 use crate::{actor::Actor, context::Context, value::Value};
 
 #[derive(Debug, Clone)]
-pub struct Request {
+pub struct Message {
     action: String,
     body: Any,
 }
 
-impl Default for Request {
-    fn default() -> Request {
-        Request {
+impl Default for Message {
+    fn default() -> Message {
+        Message {
             action: String::from(""),
             body: Any::default(),
         }
     }
 }
 
-impl Request {
+impl Message {
     pub fn new() -> Self {
         Default::default()
     }
@@ -37,5 +37,5 @@ where
     Self: Actor,
 {
     /// This method is called for every message received by this actor.
-    fn handle(&mut self, req: Request, ctx: &mut Context) -> Value;
+    fn handle(&mut self, req: Message, ctx: &mut Context) -> Value;
 }

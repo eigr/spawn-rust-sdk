@@ -6,3 +6,4 @@ version = "0.1.0"
 [dependencies]
 prost-types = "0.11"
 spawn-rs = {path = "../spawn-rs"}
+tokio = {version = "1.25.0", features = ["full"]}
