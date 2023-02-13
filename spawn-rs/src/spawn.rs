@@ -1,11 +1,11 @@
 use crate::actor::Actor;
 use crate::handler::callback;
 
-use std::io::Result;
+use std::{cell::Cell, io::Result};
 
 use actix_web::{
     middleware,
-    web::{self},
+    web::{self, Data},
     App, HttpServer,
 };
 
@@ -59,8 +59,12 @@ impl Spawn {
 
     pub async fn start(&mut self) -> Result<()> {
         let server = HttpServer::new(move || {
+            //let actors: Vec<&Box<dyn Actor>> = self.get_actors();
+
+            //let actors_cell: Cell<Vec<Box<dyn Actor>>> = Cell::new(self.get_actors());
+
             App::new()
-                //.app_data(self.get_actors())
+                .app_data(Data::new(""))
                 .wrap(middleware::Logger::default())
                 .configure(Self::config)
         })

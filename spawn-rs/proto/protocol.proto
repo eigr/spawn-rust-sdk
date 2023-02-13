@@ -154,7 +154,7 @@
 //
 syntax = "proto3";
 
-package eigr.functions.protocol;
+package eigr.spawn;
 
 import "actor.proto";
 import "google/protobuf/any.proto";
@@ -180,10 +180,10 @@ message Context {
     map<string, string> tags = 5;
 
     // Who is calling target actor
-    eigr.functions.protocol.actors.ActorId caller = 2;
+    eigr.spawn.ActorId caller = 2;
 
     // The target actor itself
-    eigr.functions.protocol.actors.ActorId self = 3;
+    eigr.spawn.ActorId self = 3;
 }
 
 // Noop is used when the input or output value of a function or method 
@@ -196,7 +196,7 @@ message RegistrationRequest {
 
     ServiceInfo service_info = 1;
 
-    eigr.functions.protocol.actors.ActorSystem actor_system = 2;
+    eigr.spawn.ActorSystem actor_system = 2;
 }
 
 message RegistrationResponse {
@@ -233,7 +233,7 @@ message ServiceInfo {
 }
 
 message SpawnRequest {
-    repeated eigr.functions.protocol.actors.ActorId actors = 1;
+    repeated eigr.spawn.ActorId actors = 1;
 }
 
 message SpawnResponse {
@@ -330,9 +330,9 @@ message Workflow {
 //   * metadata: Meta information or headers
 message InvocationRequest {
 
-    eigr.functions.protocol.actors.ActorSystem system = 1;
+    eigr.spawn.ActorSystem system = 1;
 
-    eigr.functions.protocol.actors.Actor actor = 2;
+    eigr.spawn.Actor actor = 2;
 
     string command_name = 3;
 
@@ -343,7 +343,7 @@ message InvocationRequest {
 
     bool async = 5;
 
-    eigr.functions.protocol.actors.ActorId caller = 6;
+    eigr.spawn.ActorId caller = 6;
 
     map<string, string> metadata = 8;
 
@@ -365,7 +365,7 @@ message InvocationRequest {
 //   * payload: The value to be passed to the function or method corresponding to command_name.
 message ActorInvocation {
 
-    eigr.functions.protocol.actors.ActorId actor = 1;
+    eigr.spawn.ActorId actor = 1;
 
     string command_name = 2;
 
@@ -376,7 +376,7 @@ message ActorInvocation {
         Noop noop = 5;
     }
 
-    eigr.functions.protocol.actors.ActorId caller = 6;
+    eigr.spawn.ActorId caller = 6;
 }
 
 // The user function's response after executing the action originated by the local proxy request via ActorInvocation.
@@ -415,9 +415,9 @@ message InvocationResponse {
 
     RequestStatus status = 1;
 
-    eigr.functions.protocol.actors.ActorSystem system = 2;
+    eigr.spawn.ActorSystem system = 2;
 
-    eigr.functions.protocol.actors.Actor actor = 3;
+    eigr.spawn.Actor actor = 3;
 
     oneof payload {
         google.protobuf.Any value = 4;

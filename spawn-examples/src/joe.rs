@@ -1,13 +1,25 @@
 use prost_types::Any;
 
 use spawn_rs::{
-    action::{Action, Message},
+    action::Action,
     actor::{Actor, ActorSettings, Kind},
     context::Context,
+    serializer::Serializer,
     value::Value,
+    Message,
 };
 
 pub struct Joe;
+
+impl Serializer for Joe {
+    fn decode(&mut self, _msg: prost_types::Any) -> Box<dyn std::any::Any> {
+        todo!()
+    }
+
+    fn encode(&mut self, _msg: Box<dyn std::any::Any>) -> prost_types::Any {
+        todo!()
+    }
+}
 
 impl Actor for Joe {
     fn settings(&mut self) -> ActorSettings {
