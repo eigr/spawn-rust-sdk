@@ -1,4 +1,5 @@
-extern crate actix_web;
+#[macro_use]
+extern crate rocket;
 extern crate prost_types;
 
 mod eigr;

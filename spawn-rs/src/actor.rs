@@ -88,6 +88,6 @@ impl ActorSettings {
 
 /// Actor trait
 #[allow(unused_variables)]
-pub trait Actor {
+pub trait Actor: Send + 'static {
     fn settings(&mut self) -> ActorSettings;
 }
