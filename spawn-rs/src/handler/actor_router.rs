@@ -31,4 +31,8 @@ impl Handler {
 
         self
     }
+
+    pub fn get_actors(&mut self) -> &mut HashMap<String, ActorDefinition> {
+        &mut self.actors
+    }
 }
