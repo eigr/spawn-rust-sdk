@@ -1,13 +1,17 @@
+use std::collections::HashMap;
+
 use crate::actor::ActorDefinition;
 
 #[derive()]
 pub struct Handler {
-    actors: Vec<ActorDefinition>,
+    actors: HashMap<String, ActorDefinition>,
 }
 
 impl Default for Handler {
     fn default() -> Handler {
-        Handler { actors: Vec::new() }
+        Handler {
+            actors: HashMap::new(),
+        }
     }
 }
 
@@ -18,7 +22,11 @@ impl Handler {
 
     pub fn add_actors(&mut self, actors: &mut Vec<ActorDefinition>) -> &mut Handler {
         for def in actors.iter() {
-            self.actors.push(def.to_owned());
+            let mut actor = def.to_owned();
+            let settings = actor.get_settings();
+            let name = settings.get_name();
+
+            self.actors.insert(name.to_owned(), actor);
         }
 
         self

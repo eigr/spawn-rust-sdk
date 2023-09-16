@@ -82,6 +82,38 @@ impl ActorSettings {
         self.max_pool_size = size;
         self
     }
+
+    pub fn get_name(&mut self) -> String {
+        self.name.to_string()
+    }
+
+    pub fn get_kind(&mut self) -> &mut Kind {
+        &mut self.kind
+    }
+
+    pub fn get_stateful(&mut self) -> bool {
+        self.stateful
+    }
+
+    pub fn get_deactivated_timeout(&mut self) -> i64 {
+        self.deactivated_timeout
+    }
+
+    pub fn get_snapshot_timeout(&mut self) -> i64 {
+        self.snapshot_timeout
+    }
+
+    pub fn get_channel(&mut self) -> String {
+        self.channel.to_string()
+    }
+
+    pub fn get_min_pool_size(&mut self) -> i32 {
+        self.min_pool_size
+    }
+
+    pub fn get_max_pool_size(&mut self) -> i32 {
+        self.max_pool_size
+    }
 }
 
 #[derive(Clone)]
@@ -116,5 +148,13 @@ impl ActorDefinition {
     ) -> &mut ActorDefinition {
         self.actions.insert(name, action);
         self
+    }
+
+    pub fn get_settings(&mut self) -> &mut ActorSettings {
+        &mut self.settings
+    }
+
+    pub fn get_actions(&mut self) -> &mut HashMap<String, fn(Message, Context) -> Value> {
+        &mut self.actions
     }
 }
