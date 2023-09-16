@@ -4,7 +4,6 @@ extern crate prost_types;
 
 mod eigr;
 
-pub mod action;
 pub mod actor;
 pub mod context;
 pub mod handler;

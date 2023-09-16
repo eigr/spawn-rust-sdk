@@ -1,7 +1,12 @@
+use crate::Message;
+use crate::{context::Context, value::Value};
+
+use std::collections::HashMap;
+
 #[derive(Debug, Clone)]
 pub enum Kind {
-    ABSTRACT,
-    SINGLETON,
+    NAMED,
+    UNNAMED,
     POOLED,
     PROXY,
 }
@@ -9,7 +14,6 @@ pub enum Kind {
 #[derive(Debug, Clone)]
 pub struct ActorSettings {
     name: String,
-    actions: Vec<String>,
     kind: Kind,
     stateful: bool,
     deactivated_timeout: i64,
@@ -23,8 +27,7 @@ impl Default for ActorSettings {
     fn default() -> ActorSettings {
         ActorSettings {
             name: String::from(""),
-            kind: Kind::SINGLETON,
-            actions: Vec::new(),
+            kind: Kind::NAMED,
             stateful: true,
             deactivated_timeout: 60000,
             snapshot_timeout: 50000,
@@ -47,11 +50,6 @@ impl ActorSettings {
 
     pub fn kind(&mut self, kind: Kind) -> &mut ActorSettings {
         self.kind = kind;
-        self
-    }
-
-    pub fn actions(&mut self, actions: Vec<String>) -> &mut ActorSettings {
-        self.actions = actions;
         self
     }
 
@@ -86,8 +84,37 @@ impl ActorSettings {
     }
 }
 
-/// Actor trait
-#[allow(unused_variables)]
-pub trait Actor: Send + 'static {
-    fn settings(&mut self) -> ActorSettings;
+#[derive(Clone)]
+pub struct ActorDefinition {
+    settings: ActorSettings,
+    actions: HashMap<String, fn(Message, Context) -> Value>,
+}
+
+impl Default for ActorDefinition {
+    fn default() -> ActorDefinition {
+        ActorDefinition {
+            actions: HashMap::new(),
+            settings: ActorSettings::new(),
+        }
+    }
+}
+
+impl ActorDefinition {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn with_settings(&mut self, settings: ActorSettings) -> &mut ActorDefinition {
+        self.settings = settings;
+        self
+    }
+
+    pub fn with_action(
+        &mut self,
+        name: String,
+        action: fn(Message, Context) -> Value,
+    ) -> &mut ActorDefinition {
+        self.actions.insert(name, action);
+        self
+    }
 }
