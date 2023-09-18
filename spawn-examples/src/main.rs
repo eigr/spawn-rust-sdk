@@ -4,14 +4,12 @@ extern crate rocket;
 
 mod joe;
 
-use joe::sum;
+use joe::set_language;
 use spawn_rs::actor::{ActorDefinition, ActorSettings, Kind};
 use spawn_rs::spawn::Spawn;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
-
     Spawn::new()
         .create("spawn-system".to_string())
         .with_actor(
@@ -25,7 +23,7 @@ async fn main() -> Result<(), rocket::Error> {
                         .snapshot_timeout(10000)
                         .to_owned(),
                 )
-                .with_action("sum".to_owned(), sum),
+                .with_action("sum".to_owned(), set_language),
         )
         .start()
         .await?;

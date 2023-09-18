@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate rocket;
+extern crate log;
 extern crate prost_types;
 
 mod eigr;
@@ -11,18 +12,34 @@ pub mod serializer;
 pub mod spawn;
 pub mod value;
 
+use prost::DecodeError;
 use prost_types::Any;
+
+// fn to_any<T>(message: &T) -> Any
+// where
+//     T: prost::Message,
+// {
+//     Any {
+//         type_url: T::type_url().to_string(),
+//         value: message.encode_to_vec(),
+//     }
+// }
+
+fn from_any<T>(message: &Any) -> Result<T, DecodeError>
+where
+    T: prost::Message + Default,
+{
+    T::decode(message.value.as_slice())
+}
 
 #[derive(Debug, Clone)]
 pub struct Message {
-    action: String,
     body: Any,
 }
 
 impl Default for Message {
     fn default() -> Message {
         Message {
-            action: String::from(""),
             body: Any::default(),
         }
     }
@@ -33,11 +50,14 @@ impl Message {
         Default::default()
     }
 
-    pub fn action(&self) -> &str {
-        &self.action
+    pub fn body<T>(&self) -> Result<T, DecodeError>
+    where
+        T: prost::Message + Default,
+    {
+        from_any(&self.body)
     }
 
-    pub fn body(&self) -> &Any {
-        &self.body
+    pub fn set_body(&mut self, message: Any) {
+        self.body = message
     }
 }
