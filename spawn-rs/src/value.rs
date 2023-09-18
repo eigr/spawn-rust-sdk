@@ -29,8 +29,11 @@ impl Value {
         &self.state
     }
 
-    pub fn response(&mut self, response: Any) -> &mut Value {
-        self.response = response;
+    pub fn response<T>(&mut self, message: &T) -> &mut Value
+    where
+        T: prost::Name,
+    {
+        self.response = Any::from_msg(message).unwrap();
         self
     }
 

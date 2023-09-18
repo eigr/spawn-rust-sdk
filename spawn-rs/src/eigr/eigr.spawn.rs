@@ -54,30 +54,30 @@ pub struct TimeoutStrategy {
     #[prost(int64, tag = "1")]
     pub timeout: i64,
 }
-/// A command represents an action that the user can perform on an Actor.
-/// Commands in supporting languages are represented by functions or methods.
-/// An Actor command has nothing to do with the semantics of Commands in a CQRS/EventSourced system.
+/// A action represents an action that the user can perform on an Actor.
+/// Actions in supporting languages are represented by functions or methods.
+/// An Actor action has nothing to do with the semantics of Actions in a CQRS/EventSourced system.
 /// It just represents an action that supporting languages can invoke.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Command {
+pub struct Action {
     /// The name of the function or method in the supporting language that has been registered in Ator.
     #[prost(string, tag = "1")]
     pub name: ::prost::alloc::string::String,
 }
-/// A FixedTimerCommand is similar to a regular Command, its main differences are that it is scheduled to run at regular intervals
+/// A FixedTimerAction is similar to a regular Action, its main differences are that it is scheduled to run at regular intervals
 /// and only takes the actor's state as an argument.
-/// Timer Commands are good for executing loops that manipulate the actor's own state.
+/// Timer Actions are good for executing loops that manipulate the actor's own state.
 /// In Elixir or other languages in BEAM it would be similar to invoking Process.send_after(self(), atom, msg, timeout)
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct FixedTimerCommand {
-    /// The time to wait until the command is triggered
+pub struct FixedTimerAction {
+    /// The time to wait until the action is triggered
     #[prost(int32, tag = "1")]
     pub seconds: i32,
-    /// See Command description Above
+    /// See Action description Above
     #[prost(message, optional, tag = "2")]
-    pub command: ::core::option::Option<Command>,
+    pub action: ::core::option::Option<Action>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -94,7 +94,7 @@ pub struct ActorState {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Metadata {
-    /// A channel group represents a way to send commands to various actors
+    /// A channel group represents a way to send actions to various actors
     /// that belong to a certain semantic group.
     #[prost(string, tag = "1")]
     pub channel_group: ::prost::alloc::string::String,
@@ -135,7 +135,7 @@ pub struct ActorId {
     /// Name of a ActorSystem
     #[prost(string, tag = "2")]
     pub system: ::prost::alloc::string::String,
-    /// When the Actor is of the Abstract type,
+    /// When the Actor is of the Unamed type,
     /// the name of the parent Actor must be informed here.
     #[prost(string, tag = "3")]
     pub parent: ::prost::alloc::string::String,
@@ -155,12 +155,12 @@ pub struct Actor {
     /// Actor settings.
     #[prost(message, optional, tag = "3")]
     pub settings: ::core::option::Option<ActorSettings>,
-    /// The commands registered for an actor
+    /// The actions registered for an actor
     #[prost(message, repeated, tag = "4")]
-    pub commands: ::prost::alloc::vec::Vec<Command>,
-    /// The registered timer commands for an actor.
+    pub actions: ::prost::alloc::vec::Vec<Action>,
+    /// The registered timer actions for an actor.
     #[prost(message, repeated, tag = "5")]
-    pub timer_commands: ::prost::alloc::vec::Vec<FixedTimerCommand>,
+    pub timer_actions: ::prost::alloc::vec::Vec<FixedTimerAction>,
 }
 /// The type that defines the runtime characteristics of the Actor.
 /// Regardless of the type of actor it is important that
@@ -168,14 +168,14 @@ pub struct Actor {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum Kind {
-    /// When no type is informed, the default to be assumed will be the Singleton pattern.
+    /// When no type is informed, the default to be assumed will be the Named pattern.
     UnknowKind = 0,
-    /// Abstract actors are used to create children of this based actor at runtime
-    Abstract = 1,
-    /// Singleton actors as the name suggests have only one real instance of themselves running
-    /// during their entire lifecycle. That is, they are the opposite of the Abstract type Actors.
-    Singleton = 2,
-    /// Pooled Actors are similar to abstract actors, but unlike them,
+    /// NAMED actors are used to create children of this based actor at runtime
+    Named = 1,
+    /// UNAMED actors as the name suggests have only one real instance of themselves running
+    /// during their entire lifecycle. That is, they are the opposite of the NAMED type Actors.
+    Unamed = 2,
+    /// Pooled Actors are similar to Unamed actors, but unlike them,
     /// their identifying name will always be the one registered at the system initialization stage.
     /// The great advantage of Pooled actors is that they have multiple instances of themselves
     /// acting as a request service pool.
@@ -198,8 +198,8 @@ impl Kind {
     pub fn as_str_name(&self) -> &'static str {
         match self {
             Kind::UnknowKind => "UNKNOW_KIND",
-            Kind::Abstract => "ABSTRACT",
-            Kind::Singleton => "SINGLETON",
+            Kind::Named => "NAMED",
+            Kind::Unamed => "UNAMED",
             Kind::Pooled => "POOLED",
             Kind::Proxy => "PROXY",
         }
@@ -208,8 +208,8 @@ impl Kind {
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
             "UNKNOW_KIND" => Some(Self::UnknowKind),
-            "ABSTRACT" => Some(Self::Abstract),
-            "SINGLETON" => Some(Self::Singleton),
+            "NAMED" => Some(Self::Named),
+            "UNAMED" => Some(Self::Unamed),
             "POOLED" => Some(Self::Pooled),
             "PROXY" => Some(Self::Proxy),
             _ => None,
@@ -254,6 +254,14 @@ pub struct Context {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Noop {}
+/// JSON is an alternative that some SDKs can opt in
+/// it will bypass any type validation in spawn actors state / payloads
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct JsonType {
+    #[prost(string, tag = "1")]
+    pub content: ::prost::alloc::string::String,
+}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RegistrationRequest {
@@ -345,9 +353,9 @@ pub struct Broadcast {
     /// Channel of target Actors
     #[prost(string, tag = "1")]
     pub channel_group: ::prost::alloc::string::String,
-    /// Command. Only Actors that have this command will run successfully
+    /// Action. Only Actors that have this action will run successfully
     #[prost(string, tag = "2")]
-    pub command_name: ::prost::alloc::string::String,
+    pub action_name: ::prost::alloc::string::String,
     /// Payload
     #[prost(oneof = "broadcast::Payload", tags = "3, 4")]
     pub payload: ::core::option::Option<broadcast::Payload>,
@@ -364,7 +372,7 @@ pub mod broadcast {
         Noop(super::Noop),
     }
 }
-/// Sends the output of a command of an Actor to the input of another command of an Actor
+/// Sends the output of a action of an Actor to the input of another action of an Actor
 /// Useful for handle `pipes` pattern:
 /// <https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html>
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -373,11 +381,11 @@ pub struct Pipe {
     /// Target Actor
     #[prost(string, tag = "1")]
     pub actor: ::prost::alloc::string::String,
-    /// Command.
+    /// Action.
     #[prost(string, tag = "2")]
-    pub command_name: ::prost::alloc::string::String,
+    pub action_name: ::prost::alloc::string::String,
 }
-/// Sends the input of a command of an Actor to the input of another command of an Actor
+/// Sends the input of a action of an Actor to the input of another action of an Actor
 /// Useful for handle `content-basead router` pattern
 /// <https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html>
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -386,9 +394,9 @@ pub struct Forward {
     /// Target Actor
     #[prost(string, tag = "1")]
     pub actor: ::prost::alloc::string::String,
-    /// Command.
+    /// Action.
     #[prost(string, tag = "2")]
-    pub command_name: ::prost::alloc::string::String,
+    pub action_name: ::prost::alloc::string::String,
 }
 /// Container for archicetural message patterns
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -418,11 +426,11 @@ pub mod workflow {
 ///    * system: See ActorSystem message.
 ///    * actor: The target Actor, i.e. the one that the user function is calling to perform some computation.
 ///    * caller: The caller Actor
-///    * command_name: The function or method on the target Actor that will receive this request
+///    * action_name: The function or method on the target Actor that will receive this request
 ///      and perform some useful computation with the sent data.
-///    * value: This is the value sent by the user function to be computed by the request's target Actor command.
-///    * async: Indicates whether the command should be processed synchronously, where a response should be sent back to the user function,
-///             or whether the command should be processed asynchronously, i.e. no response sent to the caller and no waiting.
+///    * value: This is the value sent by the user function to be computed by the request's target Actor action.
+///    * async: Indicates whether the action should be processed synchronously, where a response should be sent back to the user function,
+///             or whether the action should be processed asynchronously, i.e. no response sent to the caller and no waiting.
 ///    * metadata: Meta information or headers
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -432,7 +440,7 @@ pub struct InvocationRequest {
     #[prost(message, optional, tag = "2")]
     pub actor: ::core::option::Option<Actor>,
     #[prost(string, tag = "3")]
-    pub command_name: ::prost::alloc::string::String,
+    pub action_name: ::prost::alloc::string::String,
     #[prost(bool, tag = "5")]
     pub r#async: bool,
     #[prost(message, optional, tag = "6")]
@@ -465,19 +473,19 @@ pub mod invocation_request {
 ///
 /// Params:
 ///    * actor: The ActorId handling the InvocationRequest request, also called the target Actor.
-///    * command_name: The function or method on the target Actor that will receive this request
+///    * action_name: The function or method on the target Actor that will receive this request
 ///                  and perform some useful computation with the sent data.
 ///    * current_context: The current Context with current state value of the target Actor.
 ///                     That is, the same as found via matching in %Actor{name: target_actor, state: %ActorState{state: value} = actor_state}.
 ///                     In this case, the Context type will contain in the value attribute the same `value` as the matching above.
-///    * payload: The value to be passed to the function or method corresponding to command_name.
+///    * payload: The value to be passed to the function or method corresponding to action_name.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ActorInvocation {
     #[prost(message, optional, tag = "1")]
     pub actor: ::core::option::Option<ActorId>,
     #[prost(string, tag = "2")]
-    pub command_name: ::prost::alloc::string::String,
+    pub action_name: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "3")]
     pub current_context: ::core::option::Option<Context>,
     #[prost(message, optional, tag = "6")]
@@ -515,6 +523,8 @@ pub struct ActorInvocationResponse {
     pub updated_context: ::core::option::Option<Context>,
     #[prost(message, optional, tag = "5")]
     pub workflow: ::core::option::Option<Workflow>,
+    #[prost(bool, tag = "7")]
+    pub checkpoint: bool,
     #[prost(oneof = "actor_invocation_response::Payload", tags = "4, 6")]
     pub payload: ::core::option::Option<actor_invocation_response::Payload>,
 }
