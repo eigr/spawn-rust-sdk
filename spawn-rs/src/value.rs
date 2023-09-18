@@ -1,3 +1,4 @@
+use prost::Message;
 use prost_types::Any;
 
 #[derive(Debug, Clone)]
@@ -29,11 +30,18 @@ impl Value {
         &self.state
     }
 
-    pub fn response<T>(&mut self, message: &T) -> &mut Value
+    pub fn response<T>(&mut self, message: &T, proto_fqdn: String) -> &mut Value
     where
-        T: prost::Name,
+        T: prost::Message,
     {
-        self.response = Any::from_msg(message).unwrap();
+        let mut value = Vec::new();
+        Message::encode(message, &mut value).unwrap();
+
+        let type_url = format!("type.googleapis.com/{}", proto_fqdn);
+
+        let any = Any { type_url, value };
+        self.response = any;
+        //self.response = Any::from_msg(message).unwrap();
         self
     }
 

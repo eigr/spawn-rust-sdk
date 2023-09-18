@@ -23,7 +23,7 @@ async fn main() -> Result<(), rocket::Error> {
                         .snapshot_timeout(10000)
                         .to_owned(),
                 )
-                .with_action("sum".to_owned(), set_language),
+                .with_action("setLanguage".to_owned(), set_language),
         )
         .start()
         .await?;

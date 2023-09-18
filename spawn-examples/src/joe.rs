@@ -9,17 +9,15 @@ pub fn set_language(msg: Message, ctx: Context) -> Value {
         Ok(request) => {
             let lang = request.language;
             info!("Setlanguage To: {:?}", lang);
-            let reply = Reply::default();
+            let mut reply = Reply::default();
+            reply.response = lang;
 
             Value::new()
                 .state(ctx.state().clone())
-                .response(&Reply::default())
+                .response(&reply, "domain.Reply".to_string())
                 .to_owned()
         }
-        Err(e) => Value::new()
-            .state(ctx.state().clone())
-            //.response(Any::default())
-            .to_owned(),
+        Err(_e) => Value::new().state(ctx.state().clone()).to_owned(),
     };
 
     return value;

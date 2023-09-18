@@ -4,7 +4,10 @@ use crate::actor::ActorDefinition;
 
 use crate::context::Context as ActorContext;
 use crate::eigr::spawn::actor_invocation::Payload;
-use crate::eigr::spawn::{ActorId, ActorInvocation, ActorInvocationResponse, Context, Noop};
+use crate::eigr::spawn::actor_invocation_response::Payload as ResponsePayload;
+use crate::eigr::spawn::{
+    ActorId, ActorInvocation, ActorInvocationResponse, Context, Noop, Workflow,
+};
 use crate::value::Value;
 use crate::Message as ActorMessage;
 
@@ -56,7 +59,7 @@ impl Handler {
         let action: String = request.action_name;
         let context: Context = request.current_context.unwrap();
 
-        let response = ActorInvocationResponse::default();
+        let mut response = ActorInvocationResponse::default();
 
         if self.actors.contains_key(actor_id.name.as_str()) {
             debug!(
@@ -82,6 +85,12 @@ impl Handler {
                 let ctx: ActorContext = ActorContext::new();
 
                 let result: Value = (function)(msg, ctx);
+                response.actor_name = actor_id.name;
+                response.actor_system = actor_id.system;
+                response.payload = Some(ResponsePayload::Value(result.get_response().to_owned()));
+                response.updated_context = Some(Context::default());
+                response.workflow = Some(Workflow::default());
+                response.checkpoint = false;
 
                 // TODO: build correct response
                 return response;
