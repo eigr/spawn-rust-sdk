@@ -27,7 +27,11 @@ async fn main() -> Result<(), rocket::Error> {
         )
         .clone();
 
-    spawn.start().await?;
+    spawn
+        .start_with(1000, || {
+            println!("Testeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee Async --------");
+        })
+        .await?;
 
     Ok(())
 }

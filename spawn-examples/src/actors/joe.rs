@@ -5,7 +5,7 @@ use log::info;
 
 pub fn set_language(msg: Message, ctx: Context) -> Value {
     info!("Actor msg: {:?}", msg);
-    let value: Value = match msg.body::<Request>() {
+    return match msg.body::<Request>() {
         Ok(request) => {
             let lang = request.language;
             info!("Setlanguage To: {:?}", lang);
@@ -21,6 +21,4 @@ pub fn set_language(msg: Message, ctx: Context) -> Value {
             .state::<State>(&ctx.state::<State>().unwrap(), "domain.State".to_string())
             .to_owned(),
     };
-
-    return value;
 }
