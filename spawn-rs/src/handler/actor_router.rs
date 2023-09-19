@@ -30,8 +30,10 @@ impl Default for Handler {
 }
 
 impl Handler {
-    pub fn new() -> Self {
-        Default::default()
+    pub fn new(spawn: SpawnClient) -> Self {
+        let mut instance: Handler = Default::default();
+        instance.spawn = spawn;
+        instance
     }
 
     pub fn add_actors(&mut self, actors: &mut Vec<ActorDefinition>) -> &mut Handler {

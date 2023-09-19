@@ -12,6 +12,7 @@ use spawn_rs::spawn::Spawn;
 async fn main() -> Result<(), rocket::Error> {
     let mut spawn: Spawn = Spawn::new()
         .create("spawn-system".to_string())
+        .with_proxy_port(9003)
         .with_actor(
             ActorDefinition::new()
                 .with_settings(

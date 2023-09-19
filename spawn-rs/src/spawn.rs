@@ -92,11 +92,16 @@ impl Spawn {
     pub async fn start(&mut self) -> Result<(), rocket::Error> {
         env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
+        let _res = self
+            .client
+            .register(self.system.to_string(), self.actors.clone())
+            .await;
+
         let figment = rocket::Config::figment()
             .merge(("port", self.port))
             .merge(("address", self.host.to_owned()));
 
-        let mut handler: Handler = Handler::new();
+        let mut handler: Handler = Handler::new(self.client.clone());
         handler.add_actors(self.actors.as_mut());
 
         let state = Arc::new(Mutex::new(handler));
