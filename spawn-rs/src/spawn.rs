@@ -31,7 +31,7 @@ async fn handle(data: Data<'_>, handler: &State<Arc<Mutex<Handler>>>) -> io::Res
     return Ok(buf);
 }
 
-#[derive()]
+#[derive(Clone)]
 pub struct Spawn {
     system: String,
     actors: Vec<ActorDefinition>,

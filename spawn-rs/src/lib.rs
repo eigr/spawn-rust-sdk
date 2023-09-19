@@ -6,7 +6,6 @@ extern crate prost_types;
 mod eigr;
 
 pub mod actor;
-pub mod context;
 pub mod handler;
 pub mod serializer;
 pub mod spawn;
@@ -14,16 +13,6 @@ pub mod value;
 
 use prost::DecodeError;
 use prost_types::Any;
-
-// fn to_any<T>(message: &T) -> Any
-// where
-//     T: prost::Message,
-// {
-//     Any {
-//         type_url: T::type_url().to_string(),
-//         value: message.encode_to_vec(),
-//     }
-// }
 
 fn from_any<T>(message: &Any) -> Result<T, DecodeError>
 where
@@ -59,5 +48,37 @@ impl Message {
 
     pub fn set_body(&mut self, message: Any) {
         self.body = message
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Context {
+    state: Any,
+}
+
+impl Default for Context {
+    fn default() -> Context {
+        Context {
+            state: Any::default(),
+        }
+    }
+}
+
+impl Context {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// Returns a reference to the state of this [`Context`].
+    pub fn state<T>(&self) -> Result<T, DecodeError>
+    where
+        T: prost::Message + Default,
+    {
+        from_any(&self.state)
+    }
+
+    /// Sets the state of this [`Context`].
+    pub fn set_state(&mut self, state: Any) {
+        self.state = state;
     }
 }

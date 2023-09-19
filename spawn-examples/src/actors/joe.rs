@@ -1,5 +1,5 @@
-use spawn_examples::domain::domain::{Reply, Request};
-use spawn_rs::{context::Context, value::Value, Message};
+use spawn_examples::domain::domain::{Reply, Request, State};
+use spawn_rs::{value::Value, Context, Message};
 
 use log::info;
 
@@ -13,11 +13,13 @@ pub fn set_language(msg: Message, ctx: Context) -> Value {
             reply.response = lang;
 
             Value::new()
-                .state(ctx.state().clone())
+                .state::<State>(&ctx.state::<State>().unwrap(), "domain.State".to_string())
                 .response(&reply, "domain.Reply".to_string())
                 .to_owned()
         }
-        Err(_e) => Value::new().state(ctx.state().clone()).to_owned(),
+        Err(_e) => Value::new()
+            .state::<State>(&ctx.state::<State>().unwrap(), "domain.State".to_string())
+            .to_owned(),
     };
 
     return value;

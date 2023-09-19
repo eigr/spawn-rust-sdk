@@ -2,15 +2,15 @@ extern crate env_logger;
 extern crate prost_types;
 extern crate rocket;
 
-mod joe;
+mod actors;
 
-use joe::set_language;
+use actors::joe::set_language;
 use spawn_rs::actor::{ActorDefinition, ActorSettings, Kind};
 use spawn_rs::spawn::Spawn;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
-    Spawn::new()
+    let mut spawn: Spawn = Spawn::new()
         .create("spawn-system".to_string())
         .with_actor(
             ActorDefinition::new()
@@ -25,8 +25,9 @@ async fn main() -> Result<(), rocket::Error> {
                 )
                 .with_action("setLanguage".to_owned(), set_language),
         )
-        .start()
-        .await?;
+        .clone();
+
+    spawn.start().await?;
 
     Ok(())
 }
