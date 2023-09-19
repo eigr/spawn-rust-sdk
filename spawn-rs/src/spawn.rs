@@ -1,6 +1,7 @@
 use crate::actor::ActorDefinition;
 use crate::eigr::spawn::{ActorInvocation, ActorInvocationResponse};
 use crate::handler::actor_router::Handler;
+use crate::SpawnClient;
 
 use prost::Message;
 use rocket::post;
@@ -38,8 +39,7 @@ pub struct Spawn {
     actors: Vec<ActorDefinition>,
     port: u16,
     host: String,
-    proxyPort: u16,
-    proxyHost: String,
+    client: SpawnClient,
 }
 
 impl Default for Spawn {
@@ -49,8 +49,7 @@ impl Default for Spawn {
             actors: Vec::new(),
             port: 8093,
             host: "0.0.0.0".to_string(),
-            proxyPort: 9001,
-            proxyHost: "127.0.0.1".to_string(),
+            client: SpawnClient::new(),
         }
     }
 }
@@ -76,12 +75,12 @@ impl Spawn {
     }
 
     pub fn with_proxy_port(&mut self, port: u16) -> &mut Spawn {
-        self.proxyPort = port;
+        self.client.set_proxy_port(port);
         self
     }
 
     pub fn with_proxy_host(&mut self, host: String) -> &mut Spawn {
-        self.proxyHost = host;
+        self.client.set_proxy_host(host);
         self
     }
 

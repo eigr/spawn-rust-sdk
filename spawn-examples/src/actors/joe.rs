@@ -12,13 +12,19 @@ pub fn set_language(msg: Message, ctx: Context) -> Value {
             let mut reply = Reply::default();
             reply.response = lang;
 
-            Value::new()
-                .state::<State>(&ctx.state::<State>().unwrap(), "domain.State".to_string())
-                .response(&reply, "domain.Reply".to_string())
-                .to_owned()
+            match &ctx.state::<State>() {
+                Some(state) => Value::new()
+                    .state::<State>(&state.as_ref().unwrap(), "domain.State".to_string())
+                    .response(&reply, "domain.Reply".to_string())
+                    .to_owned(),
+                _ => Value::new()
+                    .state::<State>(&State::default(), "domain.State".to_string())
+                    .response(&reply, "domain.Reply".to_string())
+                    .to_owned(),
+            }
         }
         Err(_e) => Value::new()
-            .state::<State>(&ctx.state::<State>().unwrap(), "domain.State".to_string())
+            .state::<State>(&State::default(), "domain.State".to_string())
             .to_owned(),
     };
 }

@@ -8,20 +8,22 @@ use crate::eigr::spawn::{
     ActorId, ActorInvocation, ActorInvocationResponse, Context, Noop, Workflow,
 };
 use crate::value::Value;
-use crate::Context as ActorContext;
 use crate::Message as ActorMessage;
+use crate::{Context as ActorContext, SpawnClient};
 
 use log::{debug, info};
 use prost_types::Any;
 
 #[derive()]
 pub struct Handler {
+    spawn: SpawnClient,
     actors: HashMap<String, ActorDefinition>,
 }
 
 impl Default for Handler {
     fn default() -> Handler {
         Handler {
+            spawn: SpawnClient::new(),
             actors: HashMap::new(),
         }
     }
@@ -57,7 +59,6 @@ impl Handler {
 
         let actor_id: ActorId = request.actor.unwrap();
         let action: String = request.action_name;
-        let context: Context = request.current_context.unwrap();
 
         let mut response = ActorInvocationResponse::default();
 
@@ -79,10 +80,22 @@ impl Handler {
                     None => Any::default(),
                 };
 
+                let ctx: ActorContext = if let Some(current_context) = request.current_context {
+                    let mut ctx: ActorContext = ActorContext::new(self.spawn.clone());
+                    ctx.set_metadata(current_context.metadata);
+                    ctx.set_tags(current_context.tags);
+
+                    if let Some(current_state) = current_context.state {
+                        ctx.set_state(current_state)
+                    }
+
+                    ctx.clone()
+                } else {
+                    ActorContext::new(self.spawn.clone())
+                };
+
                 let mut msg: ActorMessage = ActorMessage::new();
                 msg.set_body(payload);
-
-                let ctx: ActorContext = ActorContext::new();
 
                 let result: Value = (function)(msg, ctx);
                 response.actor_name = actor_id.name;
