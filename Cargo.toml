@@ -3,3 +3,4 @@ members = [
   "spawn-rs",
   "spawn-examples",
 ]
+resolver = "2"
