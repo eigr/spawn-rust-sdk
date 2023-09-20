@@ -4,9 +4,7 @@ use crate::actor::ActorDefinition;
 
 use crate::eigr::spawn::actor_invocation::Payload;
 use crate::eigr::spawn::actor_invocation_response::Payload as ResponsePayload;
-use crate::eigr::spawn::{
-    ActorId, ActorInvocation, ActorInvocationResponse, Context, Noop, Workflow,
-};
+use crate::eigr::spawn::{ActorId, ActorInvocation, ActorInvocationResponse, Context, Workflow};
 use crate::value::Value;
 use crate::Message as ActorMessage;
 use crate::{Context as ActorContext, SpawnClient};

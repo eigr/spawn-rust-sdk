@@ -125,16 +125,16 @@ impl Context {
 #[derive(Debug, Clone)]
 pub struct SpawnClient {
     client: Client,
-    proxyPort: u16,
-    proxyHost: String,
+    proxy_port: u16,
+    proxy_host: String,
 }
 
 impl Default for SpawnClient {
     fn default() -> SpawnClient {
         SpawnClient {
             client: Client::new(),
-            proxyPort: 9001,
-            proxyHost: "127.0.0.1".to_string(),
+            proxy_port: 9001,
+            proxy_host: "127.0.0.1".to_string(),
         }
     }
 }
@@ -145,12 +145,12 @@ impl SpawnClient {
     }
 
     pub fn set_proxy_port(&mut self, port: u16) -> &mut SpawnClient {
-        self.proxyPort = port;
+        self.proxy_port = port;
         self
     }
 
     pub fn set_proxy_host(&mut self, host: String) -> &mut SpawnClient {
-        self.proxyHost = host;
+        self.proxy_host = host;
         self
     }
 
@@ -255,7 +255,7 @@ impl SpawnClient {
             .client
             .post(format!(
                 "http://{}:{}/api/v1/system",
-                self.proxyHost, self.proxyPort,
+                self.proxy_host, self.proxy_port,
             ))
             .header("Content-Type", "application/octet-stream")
             .body(request_buffer)
