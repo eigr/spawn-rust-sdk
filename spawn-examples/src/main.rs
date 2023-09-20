@@ -1,19 +1,34 @@
 extern crate env_logger;
 extern crate prost_types;
-extern crate tokio;
+extern crate rocket;
 
-mod joe;
+mod actors;
 
+use actors::joe::set_language;
+use spawn_rs::actor::{ActorDefinition, ActorSettings, Kind};
 use spawn_rs::spawn::Spawn;
 
-#[tokio::main]
-async fn main() {
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
+    let mut spawn: Spawn = Spawn::new()
+        .create("spawn-system".to_string())
+        .with_proxy_port(9003)
+        .with_actor(
+            ActorDefinition::new()
+                .with_settings(
+                    ActorSettings::new()
+                        .name("joe".to_owned())
+                        .kind(Kind::NAMED)
+                        .stateful(true)
+                        .deactivated_timeout(30000)
+                        .snapshot_timeout(10000)
+                        .to_owned(),
+                )
+                .with_action("setLanguage".to_owned(), set_language),
+        )
+        .clone();
 
-    Spawn::new()
-        .system("spawn-system".to_string())
-        .port(8091)
-        .add_actor(Box::new(joe::Joe {}))
-        .start()
-        .await;
+    spawn.start().await?;
+
+    Ok(())
 }
