@@ -60,7 +60,7 @@ impl Handler {
         let actor_id: ActorId = request.actor.unwrap();
         let action: String = request.action_name;
 
-        let mut response = ActorInvocationResponse::default();
+        let mut response: ActorInvocationResponse = ActorInvocationResponse::default();
 
         if self.actors.contains_key(actor_id.name.as_str()) {
             debug!(
@@ -68,9 +68,10 @@ impl Handler {
                 actor_id.name.as_str()
             );
             // handle response
-            let mut actor_def = self.actors.get(actor_id.name.as_str()).unwrap().clone();
+            let mut actor_def: ActorDefinition =
+                self.actors.get(actor_id.name.as_str()).unwrap().clone();
 
-            if actor_def.get_actions().contains_key(action.as_str()) {
+            let result: Option<Value> = if actor_def.get_actions().contains_key(action.as_str()) {
                 let function: &fn(ActorMessage, ActorContext) -> Value =
                     actor_def.get_actions().get(action.as_str()).unwrap();
 
@@ -98,18 +99,9 @@ impl Handler {
                 msg.set_body(payload);
 
                 let result: Value = (function)(msg, ctx);
-                response.actor_name = actor_id.name;
-                response.actor_system = actor_id.system;
-                response.payload = Some(ResponsePayload::Value(result.get_response().to_owned()));
-                response.updated_context = Some(Context::default());
-                response.workflow = Some(Workflow::default());
-                response.checkpoint = false;
 
-                // TODO: build correct response
-                return response;
-            }
-
-            if actor_def.get_timer_actions().contains_key(action.as_str()) {
+                Some(result)
+            } else if actor_def.get_timer_actions().contains_key(action.as_str()) {
                 let mut timer_action = actor_def
                     .get_timer_actions()
                     .get(action.as_str())
@@ -142,16 +134,30 @@ impl Handler {
                 msg.set_body(payload);
 
                 let result: Value = (function)(msg, ctx);
+
+                Some(result)
+            } else {
+                None
+            };
+
+            let response: ActorInvocationResponse = if let Some(value) = result {
                 response.actor_name = actor_id.name;
                 response.actor_system = actor_id.system;
-                response.payload = Some(ResponsePayload::Value(result.get_response().to_owned()));
+                response.payload = Some(ResponsePayload::Value(value.get_response().to_owned()));
                 response.updated_context = Some(Context::default());
                 response.workflow = Some(Workflow::default());
                 response.checkpoint = false;
+                response
+            } else {
+                response.actor_name = actor_id.name;
+                response.actor_system = actor_id.system;
+                response.updated_context = Some(Context::default());
+                response.workflow = Some(Workflow::default());
+                response.checkpoint = false;
+                response
+            };
 
-                // TODO: build correct response
-                return response;
-            }
+            return response;
         }
 
         return response;

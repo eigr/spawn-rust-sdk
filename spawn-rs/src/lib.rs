@@ -19,11 +19,13 @@ use eigr::spawn::{
     ActorSnapshotStrategy, ActorState, ActorSystem, FixedTimerAction, Metadata,
     RegistrationRequest, Registry, ServiceInfo, TimeoutStrategy,
 };
-use log::{debug, info};
+use log::debug;
 use prost::DecodeError;
 use prost_types::Any;
 
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Response};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Error};
+use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 
 const SUPPORTED_LIBRARY_NAME: &str = env!("CARGO_PKG_NAME");
 const SUPPORTED_LIBRARY_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -127,7 +129,7 @@ impl Context {
 
 #[derive(Debug, Clone)]
 pub struct SpawnClient {
-    client: Client,
+    client: ClientWithMiddleware,
     proxy_port: u16,
     proxy_host: String,
 }
@@ -135,7 +137,11 @@ pub struct SpawnClient {
 impl Default for SpawnClient {
     fn default() -> SpawnClient {
         SpawnClient {
-            client: Client::new(),
+            client: ClientBuilder::new(Client::new())
+                .with(RetryTransientMiddleware::new_with_policy(
+                    ExponentialBackoff::builder().build_with_max_retries(50),
+                ))
+                .build(),
             proxy_port: 9001,
             proxy_host: "127.0.0.1".to_string(),
         }
@@ -181,12 +187,11 @@ impl SpawnClient {
             .header("Content-Type", "application/octet-stream")
             .body(request_buffer)
             .send()
-            .await?;
+            .await;
 
-        debug!("Rust SDK registration response status {:?}", res.status());
-        info!("Actors register response {:?}", res);
+        debug!("Actors register response {:?}", res.as_ref().unwrap());
 
-        Ok(res)
+        res
     }
 
     fn build_actors(&mut self, system: String, definitions: Vec<ActorDefinition>) -> Vec<Actor> {
