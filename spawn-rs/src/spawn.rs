@@ -36,6 +36,8 @@ async fn handle(data: Data<'_>, handler: &State<Arc<Mutex<Handler>>>) -> io::Res
 #[derive(Clone)]
 pub struct Spawn {
     system: String,
+    service_name: String,
+    service_version: String,
     actors: Vec<ActorDefinition>,
     port: u16,
     host: String,
@@ -46,6 +48,8 @@ impl Default for Spawn {
     fn default() -> Spawn {
         Spawn {
             system: String::from(""),
+            service_name: String::from("spawn-rust-sdk"),
+            service_version: String::from(""),
             actors: Vec::new(),
             port: 8093,
             host: "0.0.0.0".to_string(),
@@ -61,6 +65,16 @@ impl Spawn {
 
     pub fn create(&mut self, system_name: String) -> &mut Spawn {
         self.system = system_name;
+        self
+    }
+
+    pub fn with_service_name(&mut self, service_name: String) -> &mut Spawn {
+        self.service_name = service_name;
+        self
+    }
+
+    pub fn with_service_version(&mut self, service_version: String) -> &mut Spawn {
+        self.service_version = service_version;
         self
     }
 
@@ -94,7 +108,12 @@ impl Spawn {
 
         let _res = self
             .client
-            .register(self.system.to_string(), self.actors.clone())
+            .register(
+                self.system.to_string(),
+                self.service_name.to_string(),
+                self.service_version.to_string(),
+                self.actors.clone(),
+            )
             .await;
 
         let figment = rocket::Config::figment()

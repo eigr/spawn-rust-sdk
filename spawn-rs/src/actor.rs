@@ -117,15 +117,33 @@ impl ActorSettings {
 }
 
 #[derive(Clone)]
+pub struct TimerActionDefinition {
+    action: fn(Message, Context) -> Value,
+    seconds: i32,
+}
+
+impl TimerActionDefinition {
+    pub fn get_action(&mut self) -> &mut fn(Message, Context) -> Value {
+        &mut self.action
+    }
+
+    pub fn get_seconds(&mut self) -> i32 {
+        self.seconds
+    }
+}
+
+#[derive(Clone)]
 pub struct ActorDefinition {
     settings: ActorSettings,
     actions: HashMap<String, fn(Message, Context) -> Value>,
+    timer_actions: HashMap<String, TimerActionDefinition>,
 }
 
 impl Default for ActorDefinition {
     fn default() -> ActorDefinition {
         ActorDefinition {
             actions: HashMap::new(),
+            timer_actions: HashMap::new(),
             settings: ActorSettings::new(),
         }
     }
@@ -150,11 +168,31 @@ impl ActorDefinition {
         self
     }
 
+    pub fn with_timer_action(
+        &mut self,
+        name: String,
+        action: fn(Message, Context) -> Value,
+        delay_seconds: i32,
+    ) -> &mut ActorDefinition {
+        self.timer_actions.insert(
+            name,
+            TimerActionDefinition {
+                action: action,
+                seconds: delay_seconds,
+            },
+        );
+        self
+    }
+
     pub fn get_settings(&mut self) -> &mut ActorSettings {
         &mut self.settings
     }
 
     pub fn get_actions(&mut self) -> &mut HashMap<String, fn(Message, Context) -> Value> {
         &mut self.actions
+    }
+
+    pub fn get_timer_actions(&mut self) -> &mut HashMap<String, TimerActionDefinition> {
+        &mut self.timer_actions
     }
 }

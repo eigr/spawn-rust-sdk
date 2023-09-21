@@ -108,6 +108,50 @@ impl Handler {
                 // TODO: build correct response
                 return response;
             }
+
+            if actor_def.get_timer_actions().contains_key(action.as_str()) {
+                let mut timer_action = actor_def
+                    .get_timer_actions()
+                    .get(action.as_str())
+                    .unwrap()
+                    .clone();
+
+                let function: &fn(ActorMessage, ActorContext) -> Value = timer_action.get_action();
+
+                let payload = match request.payload {
+                    Some(Payload::Value(value)) => value,
+                    Some(Payload::Noop(_)) => Any::default(),
+                    None => Any::default(),
+                };
+
+                let ctx: ActorContext = if let Some(current_context) = request.current_context {
+                    let mut ctx: ActorContext = ActorContext::new(self.spawn.clone());
+                    ctx.set_metadata(current_context.metadata);
+                    ctx.set_tags(current_context.tags);
+
+                    if let Some(current_state) = current_context.state {
+                        ctx.set_state(current_state)
+                    }
+
+                    ctx.clone()
+                } else {
+                    ActorContext::new(self.spawn.clone())
+                };
+
+                let mut msg: ActorMessage = ActorMessage::new();
+                msg.set_body(payload);
+
+                let result: Value = (function)(msg, ctx);
+                response.actor_name = actor_id.name;
+                response.actor_system = actor_id.system;
+                response.payload = Some(ResponsePayload::Value(result.get_response().to_owned()));
+                response.updated_context = Some(Context::default());
+                response.workflow = Some(Workflow::default());
+                response.checkpoint = false;
+
+                // TODO: build correct response
+                return response;
+            }
         }
 
         return response;

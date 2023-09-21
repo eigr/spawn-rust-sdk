@@ -16,14 +16,17 @@ use std::collections::HashMap;
 use actor::{ActorDefinition, ActorSettings};
 use eigr::spawn::{
     actor_deactivation_strategy::Strategy, Action, Actor, ActorDeactivationStrategy, ActorId,
-    ActorSnapshotStrategy, ActorState, ActorSystem, Metadata, RegistrationRequest, Registry,
-    ServiceInfo, TimeoutStrategy,
+    ActorSnapshotStrategy, ActorState, ActorSystem, FixedTimerAction, Metadata,
+    RegistrationRequest, Registry, ServiceInfo, TimeoutStrategy,
 };
 use log::{debug, info};
 use prost::DecodeError;
 use prost_types::Any;
 
 use reqwest::{Client, Error, Response};
+
+const SUPPORTED_LIBRARY_NAME: &str = env!("CARGO_PKG_NAME");
+const SUPPORTED_LIBRARY_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn from_any<T>(message: &Any) -> Result<T, DecodeError>
 where
@@ -157,11 +160,14 @@ impl SpawnClient {
     pub async fn register(
         &mut self,
         system: String,
+        service_name: String,
+        service_version: String,
         definitions: Vec<ActorDefinition>,
     ) -> Result<Response, Error> {
         debug!("Make registration request to Spawn proxy");
         let actors: Vec<Actor> = self.build_actors(system.to_string(), definitions);
-        let request: RegistrationRequest = self.build_registration_request(system, actors);
+        let request: RegistrationRequest =
+            self.build_registration_request(system, service_name, service_version, actors);
 
         let mut request_buffer: Vec<u8> = Vec::new();
         prost::Message::encode(&request, &mut request_buffer).unwrap();
@@ -206,7 +212,24 @@ impl SpawnClient {
                     })
                     .collect::<Vec<Action>>();
 
+                let timer_actions: Vec<FixedTimerAction> = actor_def
+                    .clone()
+                    .get_timer_actions()
+                    .iter()
+                    .map(|action| {
+                        let mut tac = FixedTimerAction::default();
+                        tac.seconds = action.1.clone().get_seconds();
+
+                        let mut ac = Action::default();
+                        ac.name = action.0.to_string();
+
+                        tac.action = Some(ac);
+                        tac
+                    })
+                    .collect();
+
                 ac.actions = actions;
+                ac.timer_actions = timer_actions;
 
                 return ac;
             })
@@ -218,10 +241,12 @@ impl SpawnClient {
     fn build_registration_request(
         &mut self,
         system: String,
+        service_name: String,
+        service_version: String,
         actors: Vec<Actor>,
     ) -> RegistrationRequest {
         let mut request: RegistrationRequest = RegistrationRequest::default();
-        request.service_info = self.build_service_info();
+        request.service_info = self.build_service_info(service_name, service_version);
         request.actor_system = self.build_actor_system(system, actors);
 
         request
@@ -315,12 +340,16 @@ impl SpawnClient {
         Some(registry)
     }
 
-    fn build_service_info(&mut self) -> Option<ServiceInfo> {
-        let mut service_info = ServiceInfo::default();
-        service_info.service_name = "spawn-rust-sdk".to_string();
-        service_info.service_version = "0.1.0".to_string();
-        service_info.support_library_name = "spawn-rs".to_string();
-        service_info.support_library_version = "0.1.0".to_string();
+    fn build_service_info(
+        &mut self,
+        service_name: String,
+        service_version: String,
+    ) -> Option<ServiceInfo> {
+        let mut service_info: ServiceInfo = ServiceInfo::default();
+        service_info.service_name = service_name.to_string();
+        service_info.service_version = service_version.to_string();
+        service_info.support_library_name = SUPPORTED_LIBRARY_NAME.to_owned();
+        service_info.support_library_version = SUPPORTED_LIBRARY_VERSION.to_owned();
         service_info.protocol_major_version = 1;
         service_info.protocol_minor_version = 1;
 
