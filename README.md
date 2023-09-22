@@ -19,29 +19,61 @@ message Reply {
 ```
 
 ```rust
-use spawn_examples::domain::domain::{Reply, Request};
-use spawn_rs::{context::Context, value::Value, Message};
+use spawn_examples::domain::domain::{Reply, Request, State};
+use spawn_rs::{value::Value, Context, Message};
 
 use log::info;
 
 pub fn set_language(msg: Message, ctx: Context) -> Value {
     info!("Actor msg: {:?}", msg);
-    let value: Value = match msg.body::<Request>() {
+    return match msg.body::<Request>() {
         Ok(request) => {
             let lang = request.language;
             info!("Setlanguage To: {:?}", lang);
             let mut reply = Reply::default();
             reply.response = lang;
 
-            Value::new()
-                .state(ctx.state().clone())
-                .response(&reply, "domain.Reply".to_string())
-                .to_owned()
+            match &ctx.state::<State>() {
+                Some(state) => Value::new()
+                    .state::<State>(&state.as_ref().unwrap(), "domain.State".to_string())
+                    .response(&reply, "domain.Reply".to_string())
+                    .to_owned(),
+                _ => Value::new()
+                    .state::<State>(&State::default(), "domain.State".to_string())
+                    .response(&reply, "domain.Reply".to_string())
+                    .to_owned(),
+            }
         }
-        Err(_e) => Value::new().state(ctx.state().clone()).to_owned(),
+        Err(_e) => Value::new()
+            .state::<State>(&State::default(), "domain.State".to_string())
+            .to_owned(),
     };
+}
 
-    return value;
+pub fn set_language_with_timer(msg: Message, ctx: Context) -> Value {
+    info!("Actor msg: {:?}", msg);
+    return match msg.body::<Request>() {
+        Ok(request) => {
+            let lang = request.language;
+            info!("Setlanguage To: {:?}", lang);
+            let mut reply = Reply::default();
+            reply.response = lang;
+
+            match &ctx.state::<State>() {
+                Some(state) => Value::new()
+                    .state::<State>(&state.as_ref().unwrap(), "domain.State".to_string())
+                    .response(&reply, "domain.Reply".to_string())
+                    .to_owned(),
+                _ => Value::new()
+                    .state::<State>(&State::default(), "domain.State".to_string())
+                    .response(&reply, "domain.Reply".to_string())
+                    .to_owned(),
+            }
+        }
+        Err(_e) => Value::new()
+            .state::<State>(&State::default(), "domain.State".to_string())
+            .to_owned(),
+    };
 }
 ```
 
@@ -52,14 +84,17 @@ extern crate rocket;
 
 mod joe;
 
-use joe::set_language;
+use actors::joe::{set_language, set_language_with_timer};
 use spawn_rs::actor::{ActorDefinition, ActorSettings, Kind};
 use spawn_rs::spawn::Spawn;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
-    Spawn::new()
+    let mut spawn: Spawn = Spawn::new()
         .create("spawn-system".to_string())
+        .with_service_name(env!("CARGO_PKG_NAME").to_string()) // optional
+        .with_service_version(env!("CARGO_PKG_VERSION").to_string()) // optional
+        .with_proxy_port(9003)
         .with_actor(
             ActorDefinition::new()
                 .with_settings(
@@ -67,14 +102,20 @@ async fn main() -> Result<(), rocket::Error> {
                         .name("joe".to_owned())
                         .kind(Kind::NAMED)
                         .stateful(true)
-                        .deactivated_timeout(30000)
-                        .snapshot_timeout(10000)
+                        .deactivated_timeout(30000) // optional
+                        .snapshot_timeout(10000) // optional
                         .to_owned(),
                 )
-                .with_action("setLanguage".to_owned(), set_language),
+                .with_action("setLanguage".to_owned(), set_language)
+                .with_timer_action(
+                    "set_language_with_timer".to_owned(),
+                    set_language_with_timer,
+                    1000,
+                ),
         )
-        .start()
-        .await?;
+        .clone();
+
+    spawn.start().await?;
 
     Ok(())
 }
